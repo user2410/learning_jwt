@@ -3,6 +3,10 @@ import { Document, Types } from "mongoose";
 import { rdb0 } from "./redis/redis";
 import * as bcrypt from 'bcrypt';
 
+export const USERSLS       = 'users';
+export const MAPID2IDX     = 'users_id2idx';
+export const MAPEMAIL2IDX  = 'users_email2idx';
+
 async function cacheFromMongoDB(user: Document<unknown, any, {
     email: string;
     password: string;
@@ -14,11 +18,11 @@ async function cacheFromMongoDB(user: Document<unknown, any, {
 }){
     // save new user to redis list -> new index
     const {_id, email, password} = user;
-    let idx = await rdb0.rpush('users', JSON.stringify({_id, email, password}));
+    let idx = await rdb0.rpush(USERSLS, JSON.stringify({_id, email, password}));
     // create index in zset (id - new index)
-    await rdb0.hset('users_id2idx', _id.toString(), `${idx-1}`);
+    await rdb0.hset(MAPID2IDX, _id.toString(), `${idx-1}`);
     // add a new entry to hset (email - new index)
-    await rdb0.hset('users_email2idx', email, `${idx-1}`);
+    await rdb0.hset(MAPEMAIL2IDX, email, `${idx-1}`);
 }
 
 export async function create(newEmail: string, newPassword: string) {
@@ -34,7 +38,7 @@ export async function create(newEmail: string, newPassword: string) {
 export async function signin(email: string, password: string) {
     // find by email in redis first
     let user = null;
-    let userIdx = await rdb0.hget('users_email2idx', email);
+    let userIdx = await rdb0.hget(MAPEMAIL2IDX, email);
     if(userIdx == null){
         // not cached
         console.log('cache missed');
@@ -58,7 +62,7 @@ export async function signin(email: string, password: string) {
 
 export async function findByID(id: string){
     let user = null;
-    let userIdx = await rdb0.hget('users_id2idx', id);
+    let userIdx = await rdb0.hget(MAPID2IDX, id);
     if(userIdx == null){
         // not cached
         console.log('cache missed');

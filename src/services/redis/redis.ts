@@ -1,4 +1,6 @@
 import Redis from "ioredis";
+import { WHITELIST } from "../JwtManager";
+import * as UserManager from '../UserManager';
 
 export const rdb0 = new Redis({
     host: process.env.REDIS_HOST,
@@ -6,8 +8,9 @@ export const rdb0 = new Redis({
     db: 0
 });
 
-rdb0.on('connect', function () {
-    console.log('connected to redis!!!')
+rdb0.on('connect', async function () {
+    console.log('connected to redis!!!');
+    await rdb0.del([UserManager.USERSLS, UserManager.MAPEMAIL2IDX, UserManager.MAPID2IDX, WHITELIST]);
 });
 
 rdb0.on('error', function (err) {

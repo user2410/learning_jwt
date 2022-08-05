@@ -1,9 +1,9 @@
 import * as jwt from 'jsonwebtoken';
 import { rdb0 } from './redis/redis';
 
-export const MAX_AGE = 3*60*60;
+export const MAX_AGE = parseInt(process.env.MAX_AGE ||'10800');
+export const WHITELIST = 'jwt_whitelist';
 const SECRET_KEY = process.env.SECRET_JWT || 'my@secretkey';
-const WHITELIST = 'jwt_whitelist';
 
 export async function createToken(id: string): Promise<string>{
     const newToken =  jwt.sign({id}, SECRET_KEY, {
