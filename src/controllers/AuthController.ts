@@ -12,6 +12,7 @@ export default class AuthController {
     public async signup_post(req: Request, res: Response){
         const {email, password} = req.body;
         try{
+            console.log(email, password);
             const user = await UserManager.create(email, password);
             const token = await JwtManager.createToken(user._id.toString());
             res.cookie('jwt', token, {httpOnly: true, maxAge: JwtManager.MAX_AGE*1000});
@@ -21,7 +22,7 @@ export default class AuthController {
             res.status(400).json({ err });
         }
     }
-
+    
     public login_get(req: Request, res: Response){
         res.render('login');
     }

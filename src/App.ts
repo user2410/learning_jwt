@@ -8,11 +8,13 @@ import './services/redis/redis';
 
 export default class App {
   private app: express.Application;
+  private hostname : string;
   private port : number;
 
-  constructor(port:number) {
+  constructor(port:number, hostname:string) {
     this.app = express();
     this.port = port;
+    this.hostname = hostname;
     this.config();
   }
 
@@ -51,7 +53,7 @@ export default class App {
   }
 
   public listen(){
-    this.app.listen(this.port, ()=>{
+    this.app.listen(this.port, this.hostname, ()=>{
       console.log(`Listening on port ${this.port}`);
     })
   }

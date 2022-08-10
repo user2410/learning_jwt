@@ -27,7 +27,7 @@ async function cacheFromMongoDB(user: Document<unknown, any, {
 
 export async function create(newEmail: string, newPassword: string) {
     // save to mongodb
-    const user = await UserModel.create({ newEmail, newPassword });
+    const user = await UserModel.create({ email: newEmail, password: newPassword });
     
     // save to redis
     await cacheFromMongoDB(user);
