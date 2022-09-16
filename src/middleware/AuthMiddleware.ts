@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { JwtPayload } from 'jsonwebtoken';
 
 import { verify } from '../services/JwtManager';
 import {findByID} from '../services/UserManager';
@@ -9,11 +10,13 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     if(token){
         try{
             let jwtPayload = await verify(token);
-            if(jwtPayload && typeof jwtPayload != "string") next();
-            else
-                res.redirect('/login');
+            jwtPayload = jwtPayload as JwtPayload
+            if(jwtPayload){
+                return next();
+            }
+            res.redirect('/login');
         }catch(err){
-            console.log(err);
+            // console.log(err)
             res.redirect('/login');
         }
     }else{
@@ -37,7 +40,7 @@ export async function checkUser(req: Request, res: Response, next: NextFunction)
             }
             next();
         }catch(err){
-            console.log(err);
+            // console.log(err);
             next();
         }
     }else{

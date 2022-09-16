@@ -1,11 +1,17 @@
 import { UserModel } from "./mongo/models/User";
 import { Document, Types } from "mongoose";
 import { rdb0 } from "./redis/redis";
+import { WHITELIST } from "./JwtManager";
 import * as bcrypt from 'bcrypt';
 
 export const USERSLS       = 'users';
 export const MAPID2IDX     = 'users_id2idx';
 export const MAPEMAIL2IDX  = 'users_email2idx';
+
+async function init(){
+    await rdb0.del([USERSLS, MAPEMAIL2IDX, MAPID2IDX, WHITELIST]);
+}
+init();
 
 async function cacheFromMongoDB(user: Document<unknown, any, {
     email: string;

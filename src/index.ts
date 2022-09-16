@@ -1,11 +1,12 @@
+
 import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 import App from "./App";
 
-if(process.env.NODE_ENV == 'dev')
-    dotenv.config();
-
-const port = parseInt(process.env.PORT||'3000');
-const hostname = process.env.HOSTNAME || 'localhost';
+const port = parseInt(process.env.PORT as string);
+const hostname = process.env.HOSTNAME as string;
 
 const app = new App(port, hostname);
 app.listen();
