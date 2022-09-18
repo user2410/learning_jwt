@@ -9,12 +9,11 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 
     if(token){
         try{
-            let jwtPayload = await verify(token);
-            jwtPayload = jwtPayload as JwtPayload
-            if(jwtPayload){
-                return next();
+            let jwtPayload = await verify(token) as JwtPayload;
+            if(!jwtPayload){
+                return res.redirect('/login');
             }
-            res.redirect('/login');
+            next();
         }catch(err){
             // console.log(err)
             res.redirect('/login');
@@ -31,8 +30,8 @@ export async function checkUser(req: Request, res: Response, next: NextFunction)
     if(token){
         try{
             const jwtPayload = await verify(token);
-            console.log(jwtPayload);
-            if(jwtPayload && typeof jwtPayload != "string"){
+            // console.log(jwtPayload);
+            if(jwtPayload){
                 const {id} = jwtPayload;
                 const user = await findByID(id);
                 const {_id, email} = user;

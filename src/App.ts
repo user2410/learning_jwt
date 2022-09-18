@@ -4,7 +4,7 @@ import routes from './routes/Routes';
 
 import * as cookieParser from 'cookie-parser';
 import './services/mongo/mongo';
-import './services/redis/redis';
+import './services/JwtManager';
 
 export default class App {
   private app: express.Application;
@@ -22,7 +22,7 @@ export default class App {
     // middlewares
     this.app.use(express.static('public'));
     this.app.use((req: Request, res: Response, next: NextFunction) => {
-      res.header('Access-Control-Allow-Origin', '*');
+      // res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS,PUT');
       res.header('Access-Control-Allow-Headers', '*');
       next();
@@ -35,13 +35,13 @@ export default class App {
     this.app.set('view engine', 'ejs');
     
     // Error handling routes
-    this.app.use((
-      _err: any,
-      req: Request,
-      res: Response,
-      next: NextFunction) => {
-      return res.send(_err)
-    });
+    // this.app.use((
+    //   _err: any,
+    //   req: Request,
+    //   res: Response,
+    //   next: NextFunction) => {
+    //   return res.send(_err)
+    // });
     
     // Set up routes
     routes(this.app);

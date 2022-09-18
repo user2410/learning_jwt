@@ -1,32 +1,45 @@
 import * as jwt from 'jsonwebtoken';
-import { rdb0 } from './redis/redis';
+import Redis from "ioredis";
 
-export const JWT_MAX_AGE = parseInt(process.env.JWT_MAX_AGE ||'10800');
-export const WHITELIST = 'jwt_whitelist';
-const SECRET_KEY = process.env.SECRET_JWT || 'my@secretkey';
+export const rdb0 = new Redis({
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT as string),
+    db: 0
+});
+
+rdb0.on('connect', function () {
+    console.log('connected to redis!!!');
+});
+
+rdb0.on('error', function (err) {
+    console.log('Connect redis Error ' + err)
+})
+
+export const JWT_ACCESSTK_MAXAGE = parseInt(process.env.JWT_ACCESSTK_MAXAGE as string);
+export const BLACKLIST = process.env.JWT_BLACKLIST as string;
+const SECRETE_KEY = process.env.JWT_SECRETE as string;
 
 export async function createToken(id: string): Promise<string>{
-    const newToken =  jwt.sign({id}, SECRET_KEY, {
-        expiresIn: JWT_MAX_AGE
+    const newToken =  jwt.sign({id}, SECRETE_KEY, {
+        expiresIn: JWT_ACCESSTK_MAXAGE
     });
-    // Add new token to white list
-    await rdb0.sadd(WHITELIST, newToken);
-    console.log('created new token: ' + newToken);
+    // console.log('created new token: ' + newToken);
     return newToken;
 }
 
 export async function verify(token: string) : Promise<jwt.JwtPayload>{
-    const isValidToken = await rdb0.sismember(WHITELIST, token);
+    const tokenSignature = token.split(".")[2]
+    const isInvalidToken = await rdb0.sismember(BLACKLIST, tokenSignature);
     let jwtPayload = null as any;
 
-    console.log('isValidToken: ' + isValidToken);
-    if(isValidToken){
-        jwtPayload = jwt.verify(token, SECRET_KEY);
+    // console.log('isInvalidToken: ' + isInvalidToken);
+    if(!isInvalidToken){
+        jwtPayload = jwt.verify(token, SECRETE_KEY);
         if(new Date().getTime() > jwtPayload.exp*1000){
             // expired jwt
-            // remove from whitelist
-            await rdb0.srem(WHITELIST, token);
-            return null as any;
+            // add its signature to blacklist
+            await rdb0.sadd(BLACKLIST, tokenSignature)
+            throw Error("expired token");
         }
     }
 
@@ -34,6 +47,8 @@ export async function verify(token: string) : Promise<jwt.JwtPayload>{
 }
 
 export async function revoke(token: string){
-    await rdb0.srem(WHITELIST, token);
+    // add the token to blacklist
+    const tokenSignature = token.split(".")[2]
+    await rdb0.sadd(BLACKLIST, tokenSignature);
     console.log('revoked token: ' + token);
 }

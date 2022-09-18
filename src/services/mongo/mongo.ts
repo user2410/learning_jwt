@@ -1,5 +1,5 @@
 // import { Schema, model, connect } from 'mongoose';
-import * as mongoose from 'mongoose';
+import * as mongoose from 'mongoose'
 
 const DATABASE_URL = process.env.DATABASE_URL
 

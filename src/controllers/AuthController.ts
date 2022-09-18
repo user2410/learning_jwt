@@ -15,7 +15,7 @@ export default class AuthController {
             console.log(email, password);
             const user = await UserManager.create(email, password);
             const token = await JwtManager.createToken(user._id.toString());
-            res.cookie('jwt', token, {httpOnly: true, maxAge: JwtManager.JWT_MAX_AGE*1000});
+            res.cookie('jwt', token, {httpOnly: true, maxAge: JwtManager.JWT_ACCESSTK_MAXAGE*1000});
             res.status(201).json({user: user._id});
         }catch(err){
             // console.log(err);
@@ -32,10 +32,10 @@ export default class AuthController {
         try{
             const user = await UserManager.signin(email, password);
             const token = await JwtManager.createToken(user._id.toString());
-            res.cookie('jwt', token, {httpOnly: true, maxAge: JwtManager.JWT_MAX_AGE*1000});
+            res.cookie('jwt', token, {httpOnly: true, maxAge: JwtManager.JWT_ACCESSTK_MAXAGE*1000});
             res.status(201).json({user: user._id});
         }catch(err){
-            // console.log(err);
+            console.log(err);
             res.status(400).json(err);
         }
     }
